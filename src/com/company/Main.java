@@ -1,47 +1,42 @@
 package com.company;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
+/**
+ * small example using resources such as https://www.codejava.net/java-se/networking/java-socket-server-examples-tcp-ip
+ */
 public class Main {
 
-    public static void main(String[] args) {
-        String temp;
-        String displayBytes;
-        try {
-            //create input stream
-            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-            //create client socket, connect to server
-            Socket clientSocket = new Socket("localhost", 6868);
-            //create output stream attached to socket
-            DataOutputStream outToServer =
-                    new DataOutputStream(clientSocket.getOutputStream());
+    public static void main(String[] args) throws IOException {
 
-            System.out.print("Command : ");
+        String line;
+        //create client socket, connect to a server
+        var clientSocket = new Socket("localhost", 6868);
 
-            //create input stream attached to socket
-            DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
+        do {
+            //create input stream (client input field)
+            var in = new BufferedReader(new InputStreamReader(System.in));
 
-            temp = inFromUser.readLine();
+            //send message to the server
+            var output = clientSocket.getOutputStream();
+            var writer = new PrintWriter(output, true);
 
-            //send line to server
-            //outToServer.writeBytes(temp);
-            outToServer.writeUTF(temp);
-            outToServer.flush();
+            //receive messages from server
+            var fromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
+            System.out.print("Message: ");
+
+            line = in.readLine();
+
+            writer.println(line);
 
             //read line from server
-            //displayBytes = inFromServer.readLine();
+            var displayMessage = fromServer.readLine();
+            System.out.println(displayMessage);
 
-            while ((displayBytes = inFromServer.readUTF()) != null) {
-                System.out.print(displayBytes);
-            }
-            //clientSocket.close();
-        } catch (Exception ex) {
-
-        }
+        }while (!line.equals("q"));
+        System.out.println("connection closed.");
+        clientSocket.close();
     }
 }
